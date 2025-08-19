@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquarePlus, CheckCircle } from 'lucide-react';
+import { MessageSquarePlus, CheckCircle, Phone } from 'lucide-react';
 
 export default function Footer() {
     const [feedback, setFeedback] = useState('');
@@ -57,7 +57,11 @@ export default function Footer() {
                         </form>
                     )}
                 </div>
-                 <div className="text-center text-xs text-muted-foreground mt-8">
+                 <div className="text-center text-xs text-muted-foreground mt-8 space-y-2">
+                    <div className="flex items-center justify-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        <span>Customer Care: 6382483903</span>
+                    </div>
                     <p>&copy; {new Date().getFullYear()} ScrapSnap. All rights reserved.</p>
                 </div>
             </div>
