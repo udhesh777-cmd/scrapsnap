@@ -15,12 +15,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { estimateAction } from '@/app/actions';
 import type { EstimateScrapValueOutput } from '@/ai/flows/estimate-scrap-value';
-import { Loader2, Upload, Trash2, Calendar, MapPin, DollarSign, Tag, CheckCircle } from 'lucide-react';
+import { Loader2, Upload, Trash2, Calendar, MapPin, DollarSign, Tag, CheckCircle, Hammer, Bot, MonitorSmartphone } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+
+const scrapTypes = [
+  { id: 'metal', label: 'Metal', icon: Hammer },
+  { id: 'plastic', label: 'Plastic', icon: Bot },
+  { id: 'e-waste', label: 'E-Waste', icon: MonitorSmartphone },
+];
 
 const formSchema = z.object({
   photo: z.any().refine((files) => files?.length == 1, 'A photo is required.'),
+  scrapType: z.string({ required_error: 'Please select a scrap type.'}),
   description: z.string().min(10, 'Please provide a more detailed description.').max(500),
   address: z.string().min(10, 'Please enter a valid pickup address.').max(200),
 });
@@ -59,7 +67,7 @@ export default function ScrapForm() {
     setStatus('loading');
     const formData = new FormData();
     formData.append('photo', values.photo[0]);
-    formData.append('description', values.description);
+    formData.append('description', `${values.scrapType} - ${values.description}`);
     formData.append('address', values.address);
 
     try {
@@ -213,6 +221,41 @@ export default function ScrapForm() {
                 </FormItem>
               )}
             />
+             <FormField
+              control={form.control}
+              name="scrapType"
+              render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Type of Scrap</FormLabel>
+                    <FormControl>
+                        <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="grid grid-cols-3 gap-4"
+                        >
+                            {scrapTypes.map((type) => (
+                                <FormItem key={type.id}>
+                                    <FormControl>
+                                        <RadioGroupItem value={type.id} className="sr-only" />
+                                    </FormControl>
+                                    <Label
+                                        htmlFor={type.id}
+                                        className={cn(
+                                            "flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                                            field.value === type.id && "border-primary"
+                                        )}
+                                    >
+                                        <type.icon className="w-8 h-8 mb-2" />
+                                        {type.label}
+                                    </Label>
+                                </FormItem>
+                            ))}
+                        </RadioGroup>
+                    </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="description"
@@ -248,3 +291,5 @@ export default function ScrapForm() {
     </Card>
   );
 }
+
+    
