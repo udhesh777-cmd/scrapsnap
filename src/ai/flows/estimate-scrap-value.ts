@@ -17,7 +17,7 @@ const EstimateScrapValueInputSchema = z.object({
     .describe(
       'A photo of the scrap materials, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' // Corrected typo here
     ),
-  description: z.string().describe('A description of the scrap materials.'),
+  description: z.string().describe('A description of the scrap materials, which may include type and weight.'),
 });
 export type EstimateScrapValueInput = z.infer<typeof EstimateScrapValueInputSchema>;
 
@@ -38,7 +38,7 @@ const estimateScrapValuePrompt = ai.definePrompt({
   output: {schema: EstimateScrapValueOutputSchema},
   prompt: `You are an AI assistant specialized in estimating the value of scrap materials.
 
-  Analyze the provided image and description to determine the category, estimated value, and confidence score.
+  Analyze the provided image and description to determine the category, estimated value, and confidence score. The description may contain the type of scrap and its weight.
 
   Description: {{{description}}}
   Photo: {{media url=photoDataUri}}

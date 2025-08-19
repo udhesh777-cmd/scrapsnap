@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { estimateAction } from '@/app/actions';
 import type { EstimateScrapValueOutput } from '@/ai/flows/estimate-scrap-value';
-import { Loader2, Upload, Trash2, Calendar, MapPin, DollarSign, Tag, CheckCircle, Hammer, Bot, MonitorSmartphone } from 'lucide-react';
+import { Loader2, Upload, Trash2, Calendar, MapPin, DollarSign, Tag, CheckCircle, Hammer, Bot, MonitorSmartphone, Weight } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,7 @@ const scrapTypes = [
 const formSchema = z.object({
   photo: z.any().refine((files) => files?.length == 1, 'A photo is required.'),
   scrapType: z.string({ required_error: 'Please select a scrap type.'}),
+  weight: z.string().min(1, 'Please enter an estimated weight.'),
   description: z.string().min(10, 'Please provide a more detailed description.').max(500),
   address: z.string().min(10, 'Please enter a valid pickup address.').max(200),
 });
@@ -47,6 +48,7 @@ export default function ScrapForm() {
     defaultValues: {
       description: '',
       address: '',
+      weight: '',
     },
   });
 
@@ -67,7 +69,7 @@ export default function ScrapForm() {
     setStatus('loading');
     const formData = new FormData();
     formData.append('photo', values.photo[0]);
-    formData.append('description', `${values.scrapType} - ${values.description}`);
+    formData.append('description', `${values.scrapType} - ${values.weight} - ${values.description}`);
     formData.append('address', values.address);
 
     try {
@@ -236,7 +238,7 @@ export default function ScrapForm() {
                             {scrapTypes.map((type) => (
                                 <FormItem key={type.id}>
                                     <FormControl>
-                                        <RadioGroupItem value={type.id} className="sr-only" />
+                                        <RadioGroupItem value={type.id} id={type.id} className="sr-only" />
                                     </FormControl>
                                     <Label
                                         htmlFor={type.id}
@@ -252,6 +254,19 @@ export default function ScrapForm() {
                             ))}
                         </RadioGroup>
                     </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="weight"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2"><Weight className="w-4 h-4" /> Weight (e.g., 5kg, 10 lbs)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter estimated weight" {...field} disabled={status === 'loading'} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -291,5 +306,3 @@ export default function ScrapForm() {
     </Card>
   );
 }
-
-    
