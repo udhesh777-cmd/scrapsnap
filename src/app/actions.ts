@@ -44,7 +44,7 @@ export async function estimateAction(formData: FormData): Promise<ActionResponse
         return { error: `Invalid form data: ${issues}` };
     }
     
-    const { scrapType, weight } = parsed.data;
+    const { scrapType, weight, description, address, photo } = parsed.data;
 
     try {
         const weightInKg = parseFloat(weight.replace(/[^0-9.-]+/g,""));
@@ -60,6 +60,19 @@ export async function estimateAction(formData: FormData): Promise<ActionResponse
             estimatedValue,
             confidence: 1.0, // Fixed confidence since it's a direct calculation
         };
+
+        // Log details to simulate sending an email
+        console.log('--- NEW SCRAP SUBMISSION ---');
+        console.log('Send to: udhesh777@gmail.com');
+        console.log('Scrap Type:', scrapType);
+        console.log('Weight:', weight);
+        console.log('Estimated Value:', `₹${estimatedValue.toFixed(2)}`);
+        console.log('Description:', description);
+        console.log('Address:', address);
+        console.log('Photo Name:', photo.name);
+        console.log('Photo Size:', photo.size);
+        console.log('--------------------------');
+
 
         return { data: result };
     } catch (e) {
