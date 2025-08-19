@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { estimateAction } from '@/app/actions';
 import type { EstimateScrapValueOutput } from '@/ai/flows/estimate-scrap-value';
-import { Loader2, Upload, Trash2, Calendar, MapPin, DollarSign, Tag, CheckCircle, Hammer, Bot, MonitorSmartphone, Weight } from 'lucide-react';
+import { Loader2, Upload, Trash2, Calendar, MapPin, Tag, CheckCircle, Hammer, Bot, MonitorSmartphone, Weight } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -69,8 +69,10 @@ export default function ScrapForm() {
     setStatus('loading');
     const formData = new FormData();
     formData.append('photo', values.photo[0]);
-    formData.append('description', `${values.scrapType} - ${values.weight} - ${values.description}`);
+    formData.append('description', values.description);
     formData.append('address', values.address);
+    formData.append('scrapType', values.scrapType);
+    formData.append('weight', values.weight);
 
     try {
       const result = await estimateAction(formData);
@@ -114,10 +116,10 @@ export default function ScrapForm() {
                 </div>
                 <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                        <DollarSign className="w-6 h-6 text-primary" />
+                        <span className="text-2xl font-bold">₹</span>
                         <div>
                             <p className="text-sm text-muted-foreground">Estimated Value</p>
-                            <p className="text-2xl font-bold">${estimation.estimatedValue.toFixed(2)}</p>
+                            <p className="text-2xl font-bold">{estimation.estimatedValue.toFixed(2)}</p>
                         </div>
                     </div>
                      <div className="flex items-center gap-3">
@@ -127,7 +129,7 @@ export default function ScrapForm() {
                             <p className="text-lg font-semibold capitalize">{estimation.category}</p>
                         </div>
                     </div>
-                    <p className="text-xs text-muted-foreground pt-2">Confidence: {(estimation.confidence * 100).toFixed(0)}%. This is an estimate and the final value may vary.</p>
+                    <p className="text-xs text-muted-foreground pt-2">This is a fixed price based on weight and material. The final value may vary after inspection.</p>
                 </div>
             </div>
             

@@ -1,12 +1,14 @@
 'use server';
 
-import { estimateScrapValue, EstimateScrapValueOutput } from '@/ai/flows/estimate-scrap-value';
 import { z } from 'zod';
+import type { EstimateScrapValueOutput } from '@/ai/flows/estimate-scrap-value';
 
 const actionSchema = z.object({
     photo: z.instanceof(File, { message: 'A photo is required.' }).refine(file => file.size > 0, 'A photo is required.'),
     description: z.string(),
     address: z.string(),
+    scrapType: z.enum(['metal', 'plastic', 'e-waste']),
+    weight: z.string().min(1, 'Please enter an estimated weight.'),
 });
 
 type ActionResponse = {
@@ -14,11 +16,26 @@ type ActionResponse = {
     error?: string;
 }
 
+const getPricePerKg = (scrapType: 'metal' | 'plastic' | 'e-waste'): number => {
+    switch (scrapType) {
+        case 'metal':
+            return 30;
+        case 'plastic':
+            return 20;
+        case 'e-waste':
+            return 300;
+        default:
+            return 0;
+    }
+}
+
 export async function estimateAction(formData: FormData): Promise<ActionResponse> {
     const rawFormData = {
         photo: formData.get('photo'),
         description: formData.get('description'),
         address: formData.get('address'),
+        scrapType: formData.get('scrapType'),
+        weight: formData.get('weight'),
     };
 
     const parsed = actionSchema.safeParse(rawFormData);
@@ -27,21 +44,26 @@ export async function estimateAction(formData: FormData): Promise<ActionResponse
         return { error: `Invalid form data: ${issues}` };
     }
     
-    const { photo, description } = parsed.data;
+    const { scrapType, weight } = parsed.data;
 
     try {
-        const buffer = await photo.arrayBuffer();
-        const base64 = Buffer.from(buffer).toString('base64');
-        const photoDataUri = `data:${photo.type};base64,${base64}`;
+        const weightInKg = parseFloat(weight.replace(/[^0-9.-]+/g,""));
+        if (isNaN(weightInKg) || weightInKg <= 0) {
+            return { error: 'Invalid weight. Please enter a positive number.' };
+        }
+        
+        const pricePerKg = getPricePerKg(scrapType);
+        const estimatedValue = pricePerKg * weightInKg;
 
-        const result = await estimateScrapValue({
-            photoDataUri,
-            description,
-        });
+        const result: EstimateScrapValueOutput = {
+            category: scrapType,
+            estimatedValue,
+            confidence: 1.0, // Fixed confidence since it's a direct calculation
+        };
 
         return { data: result };
     } catch (e) {
         console.error(e);
-        return { error: 'Failed to get estimation from AI. Please try again later.' };
+        return { error: 'Failed to calculate estimation. Please try again later.' };
     }
 }
